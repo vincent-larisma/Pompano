@@ -13,6 +13,37 @@ const sessionTabs = document.querySelectorAll<HTMLButtonElement>('.session-tab')
 const focusTimeInput = document.querySelector<HTMLInputElement>('#focusTime')!;
 const breakTimeInput = document.querySelector<HTMLInputElement>('#breakTime')!;
 // Audio files for alarm sounds (note: these are created fresh each time to avoid replay issues)
+// Preload audio to unlock autoplay restrictions
+let audioUnlocked = false;
+const preloadedAudios: { [key: string]: HTMLAudioElement } = {};
+
+function unlockAudio() {
+  if (audioUnlocked) return;
+  
+  console.log('Unlocking audio context...');
+  // Create and play silent audio to unlock autoplay
+  const silentAudio = new Audio();
+  silentAudio.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAACAAABhADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1f///////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAYYQNAZQAAAAAAAAAAAAAAAAAAAAA//MUZAAAAAGkAAAAAAAAA0gAAAAATEFN//MUZAMAAAGkAAAAAAAAA0gAAAAARTMu//MUZAYAAAGkAAAAAAAAA0gAAAAAOTku//MUZAkAAAGkAAAAAAAAA0gAAAAANVVV';
+  silentAudio.volume = 0.01;
+  silentAudio.play().then(() => {
+    console.log('Audio context unlocked successfully');
+    audioUnlocked = true;
+    
+    // Preload actual sound files
+    const focusPath = `${import.meta.env.BASE_URL}sounds/focus_finished.mp3`;
+    const breakPath = `${import.meta.env.BASE_URL}sounds/break_finished.m4a`;
+    
+    console.log('Preloading focus sound:', focusPath);
+    preloadedAudios['focus'] = new Audio(focusPath);
+    preloadedAudios['focus'].load();
+    
+    console.log('Preloading break sound:', breakPath);
+    preloadedAudios['break'] = new Audio(breakPath);
+    preloadedAudios['break'].load();
+  }).catch(err => {
+    console.error('Failed to unlock audio:', err);
+  });
+}
 
 function playAlarmSound(sessionType: SessionType) {
   console.log(`Playing alarm sound for session type: ${sessionType}`);
@@ -121,6 +152,9 @@ pauseBtn.addEventListener('click', () => {
   if (state.isRunning) {
     timer.pause();
   } else {
+    // Unlock audio on first user interaction
+    unlockAudio();
+    
     // Check if this is the first start (no pomodoros completed yet)
     if (state.completedPomodoros === 0 && state.sessionType === 'work') {
       playFirstPomodoroSound();
