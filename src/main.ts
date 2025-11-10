@@ -15,41 +15,21 @@ const breakTimeInput = document.querySelector<HTMLInputElement>('#breakTime')!;
 // Audio files for alarm sounds (note: these are created fresh each time to avoid replay issues)
 
 function playAlarmSound(sessionType: SessionType) {
-  const state = timer.getState();
-  
   if (sessionType === 'work') {
-    // Check if this is the first pomodoro completion
-    if (state.completedPomodoros === 1) {
-      // First pomodoro completed - play break_finished.m4a twice
-      let playCount = 0;
-      const playBreakSound = () => {
-        const audio = new Audio('/sounds/break_finished.m4a');
-        audio.play();
-        playCount++;
-        
-        audio.onended = () => {
-          if (playCount < 2) {
-            playBreakSound();
-          }
-        };
+    // Focus completed - play focus_finished.mp3 3 times
+    let playCount = 0;
+    const playFocusSound = () => {
+      const audio = new Audio('/sounds/focus_finished.mp3');
+      audio.play();
+      playCount++;
+      
+      audio.onended = () => {
+        if (playCount < 3) {
+          playFocusSound();
+        }
       };
-      playBreakSound();
-    } else {
-      // Subsequent pomodoros - play focus_finished.mp3 3 times
-      let playCount = 0;
-      const playFocusSound = () => {
-        const audio = new Audio('/sounds/focus_finished.mp3');
-        audio.play();
-        playCount++;
-        
-        audio.onended = () => {
-          if (playCount < 3) {
-            playFocusSound();
-          }
-        };
-      };
-      playFocusSound();
-    }
+    };
+    playFocusSound();
   } else {
     // Break completed - play break_finished.m4a twice
     let playCount = 0;
@@ -66,6 +46,23 @@ function playAlarmSound(sessionType: SessionType) {
     };
     playBreakSound();
   }
+}
+
+function playFirstPomodoroSound() {
+  // Play break_finished.m4a twice when starting the first pomodoro
+  let playCount = 0;
+  const playBreakSound = () => {
+    const audio = new Audio('/sounds/break_finished.m4a');
+    audio.play();
+    playCount++;
+    
+    audio.onended = () => {
+      if (playCount < 2) {
+        playBreakSound();
+      }
+    };
+  };
+  playBreakSound();
 }
 
 // Update UI based on timer state
@@ -97,6 +94,10 @@ pauseBtn.addEventListener('click', () => {
   if (state.isRunning) {
     timer.pause();
   } else {
+    // Check if this is the first start (no pomodoros completed yet)
+    if (state.completedPomodoros === 0 && state.sessionType === 'work') {
+      playFirstPomodoroSound();
+    }
     timer.start();
   }
 });
