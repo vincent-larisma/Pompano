@@ -19,7 +19,7 @@ function playAlarmSound(sessionType: SessionType) {
     // Focus completed - play focus_finished.mp3 3 times
     let playCount = 0;
     const playFocusSound = () => {
-      const audio = new Audio('/src/sounds/focus_finished.mp3');
+      const audio = new Audio('/sounds/focus_finished.mp3');
       audio.play();
       playCount++;
       
@@ -32,7 +32,7 @@ function playAlarmSound(sessionType: SessionType) {
     playFocusSound();
   } else {
     // Break completed - play break_finished.m4a once
-    const audio = new Audio('/src/sounds/break_finished.m4a');
+    const audio = new Audio('/sounds/break_finished.m4a');
     audio.play();
   }
 }
