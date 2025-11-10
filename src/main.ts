@@ -15,15 +15,31 @@ const breakTimeInput = document.querySelector<HTMLInputElement>('#breakTime')!;
 // Audio files for alarm sounds (note: these are created fresh each time to avoid replay issues)
 
 function playAlarmSound(sessionType: SessionType) {
+  console.log(`Playing alarm sound for session type: ${sessionType}`);
+  
   if (sessionType === 'work') {
     // Focus completed - play focus_finished.mp3 3 times
     let playCount = 0;
     const playFocusSound = () => {
-      const audio = new Audio('/sounds/focus_finished.mp3');
-      audio.play();
+      const soundPath = `${import.meta.env.BASE_URL}sounds/focus_finished.mp3`;
+      console.log(`Attempting to play focus sound (${playCount + 1}/3) from: ${soundPath}`);
+      const audio = new Audio(soundPath);
+      
+      audio.addEventListener('error', (e) => {
+        console.error('Error loading focus sound:', e);
+        console.error('Attempted path:', soundPath);
+      });
+      
+      audio.play().then(() => {
+        console.log(`Focus sound playing successfully (${playCount + 1}/3)`);
+      }).catch(err => {
+        console.error('Error playing focus sound:', err);
+      });
+      
       playCount++;
       
       audio.onended = () => {
+        console.log(`Focus sound ended (${playCount}/3)`);
         if (playCount < 3) {
           playFocusSound();
         }
@@ -31,38 +47,49 @@ function playAlarmSound(sessionType: SessionType) {
     };
     playFocusSound();
   } else {
-    // Break completed - play break_finished.m4a twice
-    let playCount = 0;
-    const playBreakSound = () => {
-      const audio = new Audio('/sounds/break_finished.m4a');
-      audio.play();
-      playCount++;
-      
-      audio.onended = () => {
-        if (playCount < 2) {
-          playBreakSound();
-        }
-      };
+    // Break completed - play break_finished.m4a once
+    const soundPath = `${import.meta.env.BASE_URL}sounds/break_finished.m4a`;
+    console.log(`Attempting to play break sound from: ${soundPath}`);
+    const audio = new Audio(soundPath);
+    
+    audio.addEventListener('error', (e) => {
+      console.error('Error loading break sound:', e);
+      console.error('Attempted path:', soundPath);
+    });
+    
+    audio.play().then(() => {
+      console.log('Break sound playing successfully');
+    }).catch(err => {
+      console.error('Error playing break sound:', err);
+    });
+    
+    audio.onended = () => {
+      console.log('Break sound ended');
     };
-    playBreakSound();
   }
 }
 
 function playFirstPomodoroSound() {
-  // Play break_finished.m4a twice when starting the first pomodoro
-  let playCount = 0;
-  const playBreakSound = () => {
-    const audio = new Audio('/sounds/break_finished.m4a');
-    audio.play();
-    playCount++;
-    
-    audio.onended = () => {
-      if (playCount < 2) {
-        playBreakSound();
-      }
-    };
+  console.log('Playing sound for first pomodoro start');
+  // Play break_finished.m4a once when starting the first pomodoro
+  const soundPath = `${import.meta.env.BASE_URL}sounds/break_finished.m4a`;
+  console.log(`Attempting to play first pomodoro sound from: ${soundPath}`);
+  const audio = new Audio(soundPath);
+  
+  audio.addEventListener('error', (e) => {
+    console.error('Error loading first pomodoro sound:', e);
+    console.error('Attempted path:', soundPath);
+  });
+  
+  audio.play().then(() => {
+    console.log('First pomodoro sound playing successfully');
+  }).catch(err => {
+    console.error('Error playing first pomodoro sound:', err);
+  });
+  
+  audio.onended = () => {
+    console.log('First pomodoro sound ended');
   };
-  playBreakSound();
 }
 
 // Update UI based on timer state
